@@ -73,10 +73,16 @@ You can modify these variables in the script:
 
   - Scheduling system
  
-## ScreenShort
-![Screenshot 2025-03-31 at 6 24 20 PM](https://github.com/user-attachments/assets/d475f31a-dbd8-4e0e-a575-23155aeb1dc2)
+## Demostration Video
+
+
+https://github.com/user-attachments/assets/1975eedd-3ab0-4e8e-8b9f-0633c2e0946c
+
+
 
 
 ## License
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+
 
