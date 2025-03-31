@@ -72,6 +72,10 @@ You can modify these variables in the script:
   - MongoDB integration
 
   - Scheduling system
+ 
+## ScreenShort
+![Screenshot 2025-03-31 at 6 24 20 PM](https://github.com/user-attachments/assets/d475f31a-dbd8-4e0e-a575-23155aeb1dc2)
+
 
 ## License
 This project is licensed under the MIT License - see the LICENSE file for details.
