@@ -14,7 +14,7 @@ SCRAPE_URL = "https://techcrunch.com/category/artificial-intelligence/"
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
 
 # Replace with your MongoDB Atlas connection string
-MONGO_URI = "mongodb+srv://<username>:<password>@ac-imvs0hq-shard-00-00.qlxm23k.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+MONGO_URI = "mongodb+srv://matsindect:mXORYTECjLPXLynP@ac-imvs0hq-shard-00-00.qlxm23k.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 
 # Connect to MongoDB
 client = MongoClient(MONGO_URI, server_api=ServerApi('1'))
@@ -147,7 +147,13 @@ def home():
                 color: var(--text-color);
                 overflow-x: hidden;
             }
-
+            video {
+                width: 80%;
+                max-width: 950px;
+                border: 2px solid #ccc;
+                border-radius: 8px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            }
             /* Layout */
             .dashboard {
                 display: flex;
@@ -437,6 +443,17 @@ def home():
                             <li><strong>Search Articles</strong> - Find articles based on keywords</li>
                         </ul>
                         <p>The scraper automatically collects new articles every 24 hrs, ensuring you always have access to the latest AI news.</p>
+
+                        <div class="content">
+                        <p>My github Repos:</p>
+                        <a href="https://github.com/matsindect/webscrapper/tree/main" target="_blank"> AI news scrapper repository</a>
+                        <div class="content">
+                         <h2>Demostration</h2>
+                             <video controls>
+                                <source src="https://github.com/user-attachments/assets/1975eedd-3ab0-4e8e-8b9f-0633c2e0946c" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
                     </div>
                 </div>
 
@@ -667,5 +684,6 @@ if __name__ == "__main__":
     scheduler_thread = threading.Thread(target=run_scheduler)
     scheduler_thread.daemon = True
     scheduler_thread.start()
+
     # Run Flask app
     app.run(debug=True, host='0.0.0.0', port=5000)
