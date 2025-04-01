@@ -21,15 +21,27 @@ client = MongoClient(MONGO_URI, server_api=ServerApi('1'))
 db = client.ai_news_scrapper
 articles_collection = db.articles
 
-# Send a ping to confirm a successful connection
-try:
-    client.admin.command('ping')
-    print("Pinged your deployment. You successfully connected to MongoDB!")
-except Exception as e:
-    print(e)
-# Replace the SQLite store function in your scraper
-def store_article(article_data):
 
+#    Stores the scraped article data in the MongoDB database.
+#    This function checks if an article with the same URL already exists in the database.
+#    If it does not exist, the article data is inserted into the database.
+#    Parameters:
+#        article_data (dict): A dictionary containing the article data to be stored.
+#    Returns:
+#        bool: True if the article was successfully stored, False if it already exists.
+#    Note: The function assumes that the MongoDB connection and database have been properly set up.
+#    Raises:
+#        pymongo.errors.PyMongoError: If there is an error during the database operation.
+#    Example:
+#        article_data = {
+#            "title": "AI News Title",
+#            "url": "https://example.com/ai-news",
+#            "content": "This is the content of the AI news article.",
+#            "author": "John Doe",
+#            "published_date": "2023-10-01",
+#            "scraped_date": "2023-10-01 12:00:00"
+#        }
+def store_article(article_data):
     # Check if article already exists by URL
     existing = articles_collection.find_one({"url": article_data["url"]})
     if not existing:
@@ -38,8 +50,35 @@ def store_article(article_data):
     return False
 
 
-# Web Scraper Function
+
+#    Scrapes AI-related news articles from a specified URL and processes the data.
+
+#    This function fetches the HTML content of a webpage, parses it to extract
+#    articles, and processes each article to retrieve details such as title, URL,
+#   author, publication date, and content. The extracted data is then stored in a
+#   database if it is not already present.
+
+#    Steps:
+#    1. Sends an HTTP GET request to the target URL with appropriate headers.
+#    2. Parses the HTML response using BeautifulSoup.
+#    3. Extracts a list of articles based on specific HTML structure and class names.
+#    4. Processes up to 10 articles, extracting relevant details for each.
+#    5. Logs the scraping process and handles errors gracefully.
+
+#    Note:
+#    - The function assumes the presence of global variables `USER_AGENT` and
+#        `SCRAPE_URL` for the user-agent string and the target URL, respectively.
+#    - The `store_article` function is used to save the extracted article data.
+
+#    Raises:
+#            Exception: If there is an error during the scraping process or while
+#            processing individual articles.
+
+#    Returns:
+#            None
+
 def scrape_ai_news():
+    
     print(f"Starting scrape at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     headers = {
         'User-Agent': USER_AGENT
@@ -80,6 +119,10 @@ def scrape_ai_news():
                 if author_tag:
                     author = author_tag.text.strip()
 
+                # Extract publication date
+                # Note: The date format may vary, adjust the parsing as needed
+                # Here we assume the date is in a <time> tag with a 'datetime' attribute
+                # This may need to be adjusted based on the actual HTML structure
                 date = None
                 date_tag = article.find('time')
                 if date_tag and date_tag.has_attr('datetime'):
@@ -112,11 +155,26 @@ def scrape_ai_news():
     except Exception as e:
         print(f"Scraping failed: {e}")
 
+
+
+#    Generates the HTML content for the AI News Dashboard web application.
+
+#    The function returns a multi-page HTML template with the following features:
+#   - A responsive sidebar navigation menu with sections for Introduction, API Documentation, and Search Articles.
+#    - A main content area that dynamically displays content based on the selected section.
+#    - A search functionality to query AI-related news articles.
+#    - API documentation with details about available endpoints.
+#    - A demonstration video and a link to the GitHub repository for the project.
+
+#    Returns:
+#        str: A string containing the complete HTML structure and embedded CSS/JavaScript for the dashboard.
+#    Note: The HTML includes inline CSS for styling and JavaScript for interactivity.
 # Flask API
 app = Flask(__name__)
 
 @app.route('/', methods=['GET'])
 def home():
+    
     return '''
     <!DOCTYPE html>
     <html>
@@ -445,10 +503,11 @@ def home():
                         <p>The scraper automatically collects new articles every 24 hrs, ensuring you always have access to the latest AI news.</p>
 
                         <div class="content">
-                        <p>My github Repos:</p>
-                        <a href="https://github.com/matsindect/webscrapper/tree/main" target="_blank"> AI news scrapper repository</a>
+                            <p>My github Repos:</p>
+                            <a href="https://github.com/matsindect/webscrapper/tree/main" target="_blank"> AI news scrapper repository</a>
+                        </div>
                         <div class="content">
-                         <h2>Demostration</h2>
+                            <h2>Demostration</h2>
                              <video controls>
                                 <source src="https://github.com/user-attachments/assets/1975eedd-3ab0-4e8e-8b9f-0633c2e0946c" type="video/mp4">
                                 Your browser does not support the video tag.
@@ -610,9 +669,23 @@ def home():
     </body>
     </html>
     '''
+
+
+#    Fetches a list of articles from the database with optional pagination.
+
+#    Query Parameters:
+#        limit (int, optional): The maximum number of articles to return. Defaults to 10.
+#        offset (int, optional): The number of articles to skip before starting to collect the result set. Defaults to 0.
+
+#    Returns:
+#        flask.Response: A JSON response containing:
+#            - count (int): The number of articles returned.
+#            - articles (list): A list of articles, each represented as a dictionary with no "_id" field.
+
 # Get all articles
 @app.route('/articles', methods=['GET'])
 def get_articles():
+
     limit = request.args.get('limit', default=10, type=int)
     offset = request.args.get('offset', default=0, type=int)
 
@@ -625,7 +698,16 @@ def get_articles():
         'count': len(articles),
         'articles': articles
     })
+
 # Endpoint to get a single article by title
+#    Fetches a single article from the database based on its title.
+#    URL Parameters:
+#        title (str): The title of the article to retrieve.
+
+#    Returns:
+#        flask.Response: A JSON response containing the article data if found, or an error message if not found.
+#    Note: The article data is returned without the "_id" field.
+
 @app.route('/articles/<string:title>', methods=['GET'])
 def get_article_by_title(title):
     article = articles_collection.find_one({"title": title}, {"_id": 0})
@@ -635,6 +717,14 @@ def get_article_by_title(title):
         return jsonify({'error': 'Article not found'}), 404
 
 # Endpoint to delete an article by title
+#    Deletes a specific article from the database based on its title.
+#    URL Parameters:
+#        title (str): The title of the article to delete.
+#    Returns:
+#        flask.Response: A JSON response indicating success or failure.
+#    Note: The article is deleted from the database if found, and a success message is returned.
+#    If the article is not found, an error message is returned with a 404 status code.
+
 @app.route('/articles/<string:title>', methods=['DELETE'])
 def delete_article_by_title(title):
     result = articles_collection.delete_one({"title": title})
@@ -644,6 +734,16 @@ def delete_article_by_title(title):
         return jsonify({'error': 'Article not found'}), 404
 
 # Search articles by title or content
+#    Searches for articles in the database based on a query string.
+#    Query Parameters:
+#        q (str): The search query string. This parameter is required.
+#    Returns:
+#        flask.Response: A JSON response containing:
+#            - count (int): The number of articles matching the search query.
+#            - query (str): The search query string.
+#            - results (list): A list of articles matching the search query, each represented as a dictionary with no "_id" field.
+#    Note: The search is case-insensitive and matches articles based on the title or content fields.
+
 @app.route('/search', methods=['GET'])
 def search_articles():
     query = request.args.get('q', default='', type=str)
@@ -665,7 +765,12 @@ def search_articles():
         'query': query,
         'results': results
     })
+
 # Scheduler function
+#    This function runs indefinitely, checking for scheduled tasks to execute.
+#    It uses the `schedule` library to run pending tasks every second.
+#    The function is designed to be run in a separate thread to avoid blocking the main application.
+
 def run_scheduler():
     while True:
         schedule.run_pending()
